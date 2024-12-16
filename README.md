@@ -31,8 +31,8 @@ sudo chmod -R 755 sugar
 
 # Create Apache config for SugarCRM and enable site
 cd /etc/apache2/sites-available/
-sudo nano sugar14new.dev-techloyce.com.conf  # Edit your site config as needed
-sudo a2ensite sugar14new.dev-techloyce.com.conf
+sudo nano sugar14new.sugarcrm.com.conf  # Edit your site config as needed
+sudo a2ensite sugar14new.sugarcrm.com.conf
 
 # Change directory to SugarCRM folder, unzip and set permissions
 cd /var/www/html/sugar/
@@ -44,7 +44,7 @@ sudo chmod -R 755 /var/www/html/sugar
 sudo systemctl restart apache2
 
 # Set up SSL with Certbot
-sudo certbot --apache -d sugar14new.dev-techloyce.com
+sudo certbot --apache -d sugar14new.sugarcrm.com
 
 # Restart services after SSL setup
 sudo systemctl restart apache2
