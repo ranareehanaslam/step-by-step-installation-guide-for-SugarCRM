@@ -65,6 +65,8 @@ cd /var/www/html/
 sudo mkdir sugar
 sudo chown -R www-data:www-data sugar
 sudo chmod -R 755 sugar
+sudo find /var/www/html/sugar/ -type d -exec chmod 755 {} \;
+sudo find /var/www/html/sugar/ -type f -exec chmod 644 {} \;
 ```
 
 ### 10. Create Apache config for SugarCRM and enable site:
