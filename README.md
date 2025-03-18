@@ -122,3 +122,130 @@ sudo reboot
 
 ---
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The **403 Forbidden** error for your CSS file in HestiaCP (running Nginx/Apache) indicates that the file permissions, ownership, or web server configuration might be blocking access. Here’s how to fix it:
+
+---
+
+## **Step 1: Verify File Permissions and Ownership**
+Run the following commands to make sure files have the correct permissions:
+
+```bash
+chown -R sugar:www-data /home/sugar/web/newsugar13.dev-techloyce.com/public_html
+find /home/sugar/web/newsugar13.dev-techloyce.com/public_html/cache -type d -exec chmod 755 {} \;
+find /home/sugar/web/newsugar13.dev-techloyce.com/public_html/cache -type f -exec chmod 644 {} \;
+```
+If `cache/themes/RacerX/css/style.css` is missing, try regenerating it (see **Step 3**).
+
+---
+
+## **Step 2: Check Apache & Nginx Configuration**
+HestiaCP uses **Nginx as a reverse proxy** in front of Apache.  
+You need to check both configurations.
+
+### **For Nginx:**
+Open your Nginx configuration file for the domain:
+```bash
+nano /etc/nginx/conf.d/newsugar13.dev-techloyce.com.conf
+```
+Ensure this is present:
+```nginx
+location / {
+    try_files $uri $uri/ /index.php?$query_string;
+}
+
+location ~* \.(css|js|jpg|png|gif|ico|woff|woff2|ttf|svg|eot)$ {
+    expires max;
+    log_not_found off;
+}
+```
+Save (`CTRL+X`, then `Y`, then `Enter`) and restart Nginx:
+```bash
+systemctl restart nginx
+```
+
+### **For Apache:**
+Check if `.htaccess` is blocking access:
+```bash
+nano /home/sugar/web/newsugar13.dev-techloyce.com/public_html/.htaccess
+```
+Ensure you **don't** have `Deny from all` inside the `cache/` directory.
+
+If needed, add:
+```apache
+<Directory "/home/sugar/web/newsugar13.dev-techloyce.com/public_html/cache">
+    AllowOverride All
+    Require all granted
+</Directory>
+```
+Restart Apache:
+```bash
+systemctl restart apache2
+```
+
+---
+
+## **Step 3: Regenerate Cache**
+If the CSS file is missing or corrupted, clear and regenerate the SugarCRM cache:
+
+```bash
+cd /home/sugar/web/newsugar13.dev-techloyce.com/public_html
+rm -rf cache/*
+php -f repair.php
+php -f quick_repair_and_rebuild.php
+chmod -R 777 cache upload
+```
+
+---
+
+## **Step 4: Check Server Logs**
+If the error persists, check the logs for more details:
+
+### **For Nginx:**
+```bash
+tail -f /var/log/nginx/error.log
+```
+
+### **For Apache:**
+```bash
+tail -f /var/log/apache2/error.log
+```
+
+Look for **403 errors** and post the relevant log lines here.
+
+---
+
+## **Step 5: Disable SELinux (If Enabled)**
+If your server has SELinux enabled, it may block file access. Check and disable it:
+
+```bash
+sestatus
+setenforce 0  # Temporarily disable SELinux
+```
+
+---
+
+### **Final Step: Restart Services**
+Restart both Apache and Nginx after making changes:
+
+```bash
+systemctl restart nginx
+systemctl restart apache2
+```
+
+---
+
+Try these steps and let me know the results! 🚀
